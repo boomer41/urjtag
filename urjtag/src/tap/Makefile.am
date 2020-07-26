@@ -114,6 +114,11 @@ libtap_la_SOURCES += \
 	cable/wiggler2.c
 endif
 
+if ENABLE_CABLE_JAYLINK
+libtap_la_SOURCES += \
+	cable/jaylink.c
+endif
+
 if ENABLE_CABLE_JLINK
 libtap_la_SOURCES += \
 	cable/jlink.c

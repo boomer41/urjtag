@@ -359,6 +359,39 @@ AS_IF([test "x$with_inpout32" != xno], [
 AM_CONDITIONAL(HAVE_INPOUTXX, [test "x$HAVE_INPOUTXX" = xyes])
 
 
+dnl Check for libjaylink
+dnl https://github.com/boomer41/libjaylink
+
+AC_ARG_WITH([libjaylink],
+  [AS_HELP_STRING([--with-libjaylink], [lib for recent SEGGER J-Link devices.])],
+    [:],
+    [with_libjaylink=yes])
+
+HAVELIBJAYLINK=no
+LIBJAYLINK_LIBS=
+AS_IF([test "x$with_libjaylink" != "xno"], [
+  AS_IF([test "x$with_libjaylink" != "xyes"], [
+    HAVELIBJAYLINK=manual
+    LIBJAYLINK_LIBS="-L$with_libjaylink/libjaylink/.libs/ -ljaylink"
+    LIBJAYLINK_CFLAGS="-I$with_libjaylink"
+  ], [
+    PKG_CHECK_MODULES(LIBJAYLINK, libjaylink, [HAVELIBJAYLINK=1], [:])
+    AS_IF([test "x$HAVELIBJAYLINK" = "xno"], [
+      AS_IF([test "x$with_libjaylink" != "xdetect"], [
+        AC_MSG_ERROR([*** libjaylink not detected])
+      ], [
+        AC_MSG_WARN([*** libjaylink not detected. No support for recent SEGGER J-Link devices cables via libjaylink.])
+      ])
+    ],[
+      AC_DEFINE(HAVE_LIBJAYLINK, 1, [Define if you have libjaylink])
+    ])
+  ])
+  AS_VAR_APPEND([CPPFLAGS], " $LIBJAYLINK_CFLAGS")
+])
+AC_SUBST(LIBJAYLINK_LIBS)
+AM_CONDITIONAL(HAVE_LIBJAYLINK, [test "x$HAVELIBJAYLINK" != "xno"])
+
+
 WARNINGCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -Wpointer-arith"
 AC_ARG_ENABLE([werror],
   [AS_HELP_STRING([--enable-werror], [build with -Werror])],
@@ -668,6 +701,7 @@ URJ_DRIVER_SET([cable], [
 	bsdgpio
 	ice100
 	igloo
+	jaylink
 	jlink
 	keithkoep
 	lattice
@@ -693,6 +727,10 @@ URJ_DRIVER_SET([cable], [
 			-e s/jlink// \
 			-e s/vsllink// \
 			-e s/xpc//`
+	])
+	AS_IF([test "x$HAVELIBJAYLINK" = "xno"], [
+		drivers=`echo ${drivers} | $SED \
+			-e s/jaylink//`
 	])
 	AS_IF([test "x$ac_cv_func_pread" != "xyes"], [
 		drivers=`echo ${drivers} | $SED -e s/gpio//`
@@ -792,6 +830,7 @@ AC_DEFUN([MAKE_YESNO_VAR],[dnl
 MAKE_YESNO_VAR([HAVELIBFTDI], [no])
 MAKE_YESNO_VAR([HAVELIBFTD2XX], [no])
 MAKE_YESNO_VAR([HAVE_INPOUTXX], [no])
+MAKE_YESNO_VAR([HAVE_LIBJAYLINK], [no])
 MAKE_YESNO_VAR([svf], [false])
 MAKE_YESNO_VAR([bsdl], [false])
 MAKE_YESNO_VAR([stapl], [false])
@@ -804,6 +843,7 @@ urjtag is now configured for
     libftdi    : $FLAG_HAVELIBFTDI $FLAG_HAVELIBFTDI_ASYNCMODE
     libftd2xx  : $FLAG_HAVELIBFTD2XX
     inpout32   : $FLAG_HAVE_INPOUTXX
+    libjaylink : $FLAG_HAVE_LIBJAYLINK
 
   Subsystems:
     SVF        : $FLAG_svf

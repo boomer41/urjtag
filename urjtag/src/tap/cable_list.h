@@ -78,6 +78,9 @@ _URJ_CABLE(ice100B)
 #ifdef ENABLE_CABLE_IGLOO
 _URJ_CABLE(igloo)
 #endif
+#ifdef ENABLE_CABLE_JAYLINK
+_URJ_CABLE(jaylink)
+#endif
 #ifdef ENABLE_JIM
 _URJ_CABLE(jim)
 #endif

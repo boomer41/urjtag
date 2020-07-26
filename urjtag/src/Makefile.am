@@ -72,7 +72,8 @@ liburjtag_la_LIBADD = \
 	$(LIBFTDI_LIBS) \
 	@FTD2XXLIB@ \
 	$(LIBUSB_LIBS) \
-	@LIBINTL@
+	@LIBINTL@ \
+	$(LIBJAYLINK_LIBS)
 
 if ENABLE_SVF
 liburjtag_la_LIBADD += svf/libsvf.la
